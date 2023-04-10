@@ -50,16 +50,13 @@ const Board = (props) => {
     });
 
     setTableBoard(tableBoard); /* pour ne pas être confu avec notre variable d'état, aussi nommé tableBoard */
-  };
 
-  const displayBoard = () => {
     /**
-     * ...une fois que je saurai faire le state accessible parmi les fonctions
-     * ... je vais diviser le code dans deux fonction en mettant le code appropié ici
-     * mais pour le moment...
-     * ...le code se trouve dans une (grande) fonction. regardez là-dessûs
+     * ce code dessous sera une troisieme fonction
      */
   };
+
+  const displayBoard = () => {};
 
   useEffect(() => {
     createBoard();
