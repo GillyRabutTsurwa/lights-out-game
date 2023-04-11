@@ -6,54 +6,104 @@ function Board(props) {
     const { nrows, ncols, chanceLightStartsOn } = props;
 
     const [hasWon, setHasWon] = useState(false);
-    const [board, setBoard] = useState([]);
-    const [tableBoard, setTableBoard] = useState([]);
+    const [board, setBoard] = useState(createBoard());
+
+    let rowsIndex;
+    let columsIndex;
 
     // NOTE: make board with no cells
-    const createBoard = () => {
-        const board = [];
+    function createBoard() {
+        const boardCanvas = [];
 
-        [...Array(nrows).keys()].forEach((_, index) => {
+        [...Array(nrows).keys()].forEach(() => {
             const row = [];
 
-            [...Array(ncols).keys()].forEach((_, index) => {
+            [...Array(ncols).keys()].forEach(() => {
                 row.push(Math.random() < chanceLightStartsOn);
             });
 
-            board.push(row);
+            boardCanvas.push(row);
         });
 
-        setBoard(board);
+        return boardCanvas;
+    }
 
+    function flipCellsAround(coordinates) {
+        console.log("FLIP SETTINGS");
+        let newBoard = board.map((currentRow) => [...currentRow]);
+        let [y, x] = coordinates.split("-").map(Number);
+
+        function flipCell(y, x) {
+            if (x >= 0 && x < ncols && y >= 0 && y < nrows) newBoard[y][x] = !newBoard[y][x];
+        }
+
+        flipCell(y, x); // flip initial cell
+        flipCell(y, x - 1); // flip left
+        flipCell(y, x + 1); // flip right
+        flipCell(y - 1, x); // flip below
+        flipCell(y + 1, x); // flip above
+
+        /**
+         * NOTE: i are using the array .every method twice to go through the rows and columns
+         * this is so that we target every cell
+         * so remember the currentRow is an array also
+         * that is why i am using .every on it as well
+         * i will refactor this code in the next commit
+         */
+        const checkForWin = board.every((currentRow) => {
+            return currentRow.every((currentCell) => !currentCell);
+        });
+
+        setBoard(newBoard);
+        setHasWon(checkForWin);
+    }
+
+    function displayTable() {
         // IMPORTANTNOTE: insert cells in board
         const tableBoard = [];
+
         [...Array(nrows).keys()].forEach((_, index) => {
             const row = [];
-            let rowsIndex = index; //NOTE: on fait ça pour que l'index de nrows soit accessible au ncols dessous
+            rowsIndex = index; //NOTE: on fait ça pour que l'index de nrows soit accessible au ncols dessous
 
             [...Array(ncols).keys()].forEach((_, index) => {
+                columsIndex = index;
                 /**
                  * IMPORTANTNOTE: index here is equals to columns index.
-                 * in Colt's versino they're represented as x and y and he uses regularly forloops
+                 * in Colt's version they're represented as x and y and he uses regularly forloops
+                 *
                  */
-                console.log(board);
-                row.push(<Cell isLit={board[rowsIndex][index]} key={`${rowsIndex}-${index}`} />);
+                let coordinates = `${rowsIndex}-${columsIndex}`;
+                row.push(<Cell key={coordinates} isLit={board[rowsIndex][columsIndex]} flipNearbyCells={() => flipCellsAround(coordinates)} />);
             });
 
             tableBoard.push(<tr key={rowsIndex}>{row}</tr>);
         });
 
-        setTableBoard(tableBoard); /* pour ne pas être confu avec notre variable d'état, aussi nommé tableBoard */
-    };
-
-    useEffect(() => {
-        createBoard();
-    }, []);
+        return (
+            <table className="board">
+                <tbody>{tableBoard}</tbody>
+            </table>
+        );
+    }
 
     return (
-        <table className="board">
-            <tbody>{tableBoard}</tbody>
-        </table>
+        <div>
+            {hasWon ? (
+                <div className="winner">
+                    <span className="neon-orange">YOU</span>
+                    <span className="neon-blue">WIN!</span>
+                </div>
+            ) : (
+                <div>
+                    <div className="board-title">
+                        <div className="neon-orange">Lights</div>
+                        <div className="neon-blue">Out</div>
+                    </div>
+                    {displayTable()}
+                </div>
+            )}
+        </div>
     );
 }
 
